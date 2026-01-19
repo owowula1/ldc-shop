@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { TrendingUp, ShoppingCart, CreditCard, Package, Users } from "lucide-react"
-import { saveShopName, saveShopDescription, saveShopLogo, saveShopFooter, saveThemeColor, saveLowStockThreshold, saveCheckinReward, saveCheckinEnabled, saveNoIndex } from "@/actions/admin"
+import { saveShopName, saveShopDescription, saveShopLogo, saveShopFooter, saveThemeColor, saveLowStockThreshold, saveCheckinReward, saveCheckinEnabled, saveNoIndex, saveRefundReclaimCards } from "@/actions/admin"
 import { checkForUpdates } from "@/actions/update-check"
 import { joinRegistry } from "@/actions/registry"
 import { toast } from "sonner"
@@ -32,6 +32,7 @@ interface AdminSettingsContentProps {
     checkinReward: number
     checkinEnabled: boolean
     noIndexEnabled: boolean
+    refundReclaimCards: boolean
     registryOptIn: boolean
     registryEnabled: boolean
 }
@@ -60,7 +61,7 @@ const THEME_COLORS = [
     { value: 'pink', hue: 330 },
 ]
 
-export function AdminSettingsContent({ stats, shopName, shopDescription, shopLogo, shopFooter, themeColor, visitorCount, lowStockThreshold, checkinReward, checkinEnabled, noIndexEnabled, registryOptIn, registryEnabled }: AdminSettingsContentProps) {
+export function AdminSettingsContent({ stats, shopName, shopDescription, shopLogo, shopFooter, themeColor, visitorCount, lowStockThreshold, checkinReward, checkinEnabled, noIndexEnabled, refundReclaimCards, registryOptIn, registryEnabled }: AdminSettingsContentProps) {
     const { t } = useI18n()
 
     // State
@@ -82,6 +83,8 @@ export function AdminSettingsContent({ stats, shopName, shopDescription, shopLog
     const [savingEnabled, setSavingEnabled] = useState(false)
     const [enabledNoIndex, setEnabledNoIndex] = useState(noIndexEnabled)
     const [savingNoIndex, setSavingNoIndex] = useState(false)
+    const [refundReclaimEnabled, setRefundReclaimEnabled] = useState(refundReclaimCards)
+    const [savingRefundReclaim, setSavingRefundReclaim] = useState(false)
     const [checkingUpdate, setCheckingUpdate] = useState(false)
     const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null)
     const [submittingRegistry, setSubmittingRegistry] = useState(false)
@@ -162,6 +165,19 @@ export function AdminSettingsContent({ stats, shopName, shopDescription, shopLog
             toast.error(e.message)
         } finally {
             setSavingEnabled(false)
+        }
+    }
+
+    const handleToggleRefundReclaim = async (checked: boolean) => {
+        setSavingRefundReclaim(true)
+        try {
+            await saveRefundReclaimCards(checked)
+            setRefundReclaimEnabled(checked)
+            toast.success(t('common.success'))
+        } catch (e: any) {
+            toast.error(e.message)
+        } finally {
+            setSavingRefundReclaim(false)
         }
     }
 
@@ -409,6 +425,28 @@ export function AdminSettingsContent({ stats, shopName, shopDescription, shopLog
                             </div>
                         </div>
                     )}
+                </CardContent>
+            </Card>
+
+            {/* Refund Settings */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t('admin.settings.refund.title')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <div className="flex items-center gap-4">
+                        <Label htmlFor="refund-reclaim" className="cursor-pointer">{t('admin.settings.refund.reclaimLabel')}</Label>
+                        <Button
+                            id="refund-reclaim"
+                            variant={refundReclaimEnabled ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleToggleRefundReclaim(!refundReclaimEnabled)}
+                            disabled={savingRefundReclaim}
+                        >
+                            {refundReclaimEnabled ? t('admin.settings.refund.reclaimEnabled') : t('admin.settings.refund.reclaimDisabled')}
+                        </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('admin.settings.refund.reclaimHint')}</p>
                 </CardContent>
             </Card>
 

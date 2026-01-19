@@ -225,6 +225,13 @@
                 "enabled": "已禁止",
                 "disabled": "允许收录"
             },
+            "refund": {
+                "title": "退款设置",
+                "reclaimLabel": "退款后卡密回收",
+                "reclaimEnabled": "已启用",
+                "reclaimDisabled": "已禁用",
+                "reclaimHint": "开启后退款会把卡密放回库存；关闭可避免二手卡密再次出售。"
+            },
             "footer": {
                 "title": "自定义页脚",
                 "placeholder": "例如：联系客服：xxx@example.com",

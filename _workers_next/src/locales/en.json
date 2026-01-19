@@ -225,6 +225,13 @@
                 "enabled": "Blocked",
                 "disabled": "Allowed"
             },
+            "refund": {
+                "title": "Refund Settings",
+                "reclaimLabel": "Reclaim card keys on refund",
+                "reclaimEnabled": "Enabled",
+                "reclaimDisabled": "Disabled",
+                "reclaimHint": "When enabled, refunded card keys return to stock; disable to avoid reselling used keys."
+            },
             "footer": {
                 "title": "Custom Footer",
                 "placeholder": "e.g. Contact: xxx@example.com",
