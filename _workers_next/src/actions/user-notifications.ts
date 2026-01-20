@@ -34,7 +34,9 @@ async function getBroadcastClearedAt(userId: string) {
     try {
         const raw = await getSetting(broadcastClearKey(userId))
         const val = Number(raw || 0)
-        return Number.isFinite(val) ? val : 0
+        if (!Number.isFinite(val)) return 0
+        // If value looks like seconds, convert to ms
+        return val > 0 && val < 1_000_000_000_000 ? val * 1000 : val
     } catch {
         return 0
     }
@@ -96,6 +98,7 @@ export async function getMyNotifications() {
     try {
         await ensureBroadcastTables()
         const clearedAt = await getBroadcastClearedAt(userId)
+        const clearDate = clearedAt > 0 ? new Date(clearedAt) : null
         const broadcasts = clearedAt > 0
             ? await db
                 .select({
@@ -106,7 +109,7 @@ export async function getMyNotifications() {
                     createdAt: broadcastMessages.createdAt,
                 })
                 .from(broadcastMessages)
-                .where(gte(broadcastMessages.createdAt, new Date(clearedAt)))
+                .where(gte(broadcastMessages.createdAt, clearDate!))
                 .orderBy(desc(broadcastMessages.createdAt))
                 .limit(BROADCAST_LIMIT)
             : await db
@@ -161,11 +164,12 @@ export async function getMyUnreadCount() {
     try {
         await ensureBroadcastTables()
         const clearedAt = await getBroadcastClearedAt(userId)
+        const clearDate = clearedAt > 0 ? new Date(clearedAt) : null
         const broadcastRows = clearedAt > 0
             ? await db
                 .select({ id: broadcastMessages.id })
                 .from(broadcastMessages)
-                .where(gte(broadcastMessages.createdAt, new Date(clearedAt)))
+                .where(gte(broadcastMessages.createdAt, clearDate!))
                 .orderBy(desc(broadcastMessages.createdAt))
                 .limit(BROADCAST_LIMIT)
             : await db
