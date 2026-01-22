@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { StarRatingStatic } from "@/components/star-rating-static"
+import { NavigationPill } from "@/components/navigation-pill"
 
 interface Product {
     id: string
@@ -150,43 +151,21 @@ export async function HomeContent({ products, announcement, visitorCount, catego
                         {sortKey && sortKey !== 'default' && <input type="hidden" name="sort" value={sortKey} />}
                     </form>
 
-                    {/* Horizontal Category Pills */}
+                    {/* Apple-style Category Navigation Pill */}
                     <div className="flex-1 w-full overflow-x-auto no-scrollbar pb-2 md:pb-0">
-                        <div className="flex gap-2">
-                            <Button
-                                variant={selectedCategory === null ? "default" : "outline"}
-                                size="sm"
-                                className={cn(
-                                    "rounded-full whitespace-nowrap transition-all duration-300",
-                                    selectedCategory === null
-                                        ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 ring-1 ring-primary/30"
-                                        : "bg-background/70 border-dashed border-border hover:bg-muted"
-                                )}
-                                asChild
-                            >
-                                <Link href={buildUrl({ q: searchTerm, category: null, sort: sortKey, page: 1 })}>{t('common.all')}</Link>
-                            </Button>
-                            {categories.map(category => (
-                                <Button
-                                    key={category}
-                                    variant={selectedCategory === category ? "default" : "outline"}
-                                    size="sm"
-                                    className={cn(
-                                        "rounded-full capitalize whitespace-nowrap transition-all duration-300",
-                                        selectedCategory === category
-                                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 ring-1 ring-primary/30"
-                                            : "bg-background/70 hover:bg-muted"
-                                    )}
-                                    asChild
-                                >
-                                    <Link href={buildUrl({ q: searchTerm, category, sort: sortKey, page: 1 })}>
-                                        {categoryConfig?.length
-                                            ? `${categoryConfig.find(c => c.name === category)?.icon ? `${categoryConfig.find(c => c.name === category)?.icon} ` : ''}${category}`
-                                            : category}
-                                    </Link>
-                                </Button>
-                            ))}
-                        </div>
+                        <NavigationPill
+                            items={[
+                                { key: '', label: t('common.all'), href: buildUrl({ q: searchTerm, category: null, sort: sortKey, page: 1 }) },
+                                ...categories.map(cat => ({
+                                    key: cat,
+                                    label: categoryConfig?.find(c => c.name === cat)?.icon
+                                        ? `${categoryConfig.find(c => c.name === cat)?.icon} ${cat}`
+                                        : cat,
+                                    href: buildUrl({ q: searchTerm, category: cat, sort: sortKey, page: 1 })
+                                }))
+                            ]}
+                            selectedKey={selectedCategory || ''}
+                        />
                     </div>
 
                     {/* Sort Dropdown (Simplified as inline buttons for now, or dropdown later) */}
@@ -259,7 +238,7 @@ export async function HomeContent({ products, announcement, visitorCount, catego
                                         loading={index < 2 ? "eager" : "lazy"}
                                         decoding="async"
                                         fetchPriority={index < 2 ? "high" : "auto"}
-                                        className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-[1.03]"
+                                        className="object-contain w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
                                     />
                                     {/* Overlay gradient */}
                                     <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -273,7 +252,7 @@ export async function HomeContent({ products, announcement, visitorCount, catego
                                 {/* Content Section */}
                                 <CardContent className="relative z-20 flex-1 p-4 pointer-events-none">
                                     <div className="flex items-start justify-between gap-2 mb-1.5">
-                                        <h3 className="font-semibold text-base group-hover:text-primary transition-colors duration-300 leading-snug line-clamp-1" title={product.name}>
+                                        <h3 className="font-bold text-base tracking-tight group-hover:text-primary transition-colors duration-300 leading-snug line-clamp-1" title={product.name}>
                                             {product.name}
                                         </h3>
                                     </div>
@@ -303,7 +282,7 @@ export async function HomeContent({ products, announcement, visitorCount, catego
                                 <CardFooter className="relative z-20 p-4 pt-0 flex flex-wrap items-center gap-3 mt-auto border-t border-border/30 bg-muted/5 pointer-events-none">
                                     <div className="flex min-w-0 flex-1 flex-col">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-lg font-bold text-primary tabular-nums whitespace-nowrap">{Number(product.price)}</span>
+                                            <span className="text-xl font-black text-primary tabular-nums whitespace-nowrap tracking-tight">{Number(product.price)}</span>
                                             <span className="text-xs text-muted-foreground font-medium uppercase">{t('common.credits')}</span>
                                             {product.compareAtPrice && Number(product.compareAtPrice) > Number(product.price) && (
                                                 <span className="text-xs text-muted-foreground/70 line-through tabular-nums">
@@ -327,8 +306,8 @@ export async function HomeContent({ products, announcement, visitorCount, catego
                                         <Button
                                             size="sm"
                                             className={cn(
-                                                "h-8 px-4 text-xs font-medium rounded-full shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer",
-                                                product.stockCount > 0 ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted text-muted-foreground hover:bg-muted"
+                                                "h-9 px-5 text-xs font-semibold rounded-full backdrop-blur-sm shadow-sm hover:shadow-lg hover:scale-105 transition-all duration-300 active:scale-95 cursor-pointer",
+                                                product.stockCount > 0 ? "bg-primary/90 text-primary-foreground hover:bg-primary" : "bg-muted/80 text-muted-foreground hover:bg-muted"
                                             )}
                                             disabled={product.stockCount <= 0}
                                         >
