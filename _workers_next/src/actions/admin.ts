@@ -178,23 +178,33 @@ export async function addCards(formData: FormData) {
 
     if (cardList.length === 0) return
 
-    try {
-        await db.run(sql`DROP INDEX IF EXISTS cards_product_id_card_key_uq;`)
-    } catch {
-        // best effort
-    }
+    // Deduplicate input list first
+    const uniqueCards = [...new Set(cardList)]
+
+    // Fetch existing card keys for this product to avoid duplicates
+    const existingResult: any = await db.run(sql`
+        SELECT card_key FROM cards WHERE product_id = ${productId}
+    `)
+    const existingKeys = new Set(
+        (existingResult?.results || existingResult?.rows || []).map((r: any) => r.card_key)
+    )
+
+    // Filter out already existing cards
+    const newCards = uniqueCards.filter(key => !existingKeys.has(key))
+
+    if (newCards.length === 0) return
 
     // D1 has a limit on SQL variables (around 100 bindings per query)
     // Drizzle generates bindings for all columns (~8), so 100/8 ≈ 12 max
     const BATCH_SIZE = 10
-    for (let i = 0; i < cardList.length; i += BATCH_SIZE) {
-        const batch = cardList.slice(i, i + BATCH_SIZE)
+    for (let i = 0; i < newCards.length; i += BATCH_SIZE) {
+        const batch = newCards.slice(i, i + BATCH_SIZE)
         await db.insert(cards).values(
             batch.map(key => ({
                 productId,
                 cardKey: key
             }))
-        )
+        ).onConflictDoNothing()
     }
     try {
         await recalcProductAggregates(productId)
